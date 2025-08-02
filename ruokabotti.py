@@ -3,8 +3,8 @@ import requests
 import os
 
 # 🔑 Aseta omat tunnukset tähän
-DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
-SPOON_KEY = os.getenv("SPOON_KEY")
+DISCORD_TOKEN = "MTQwMTAwNDI5MzQ4MTQzNTIzNw.GWJ-vl.FsOIUf1OTaPe6dbF0oIrngWu-3ED72Ijt-LVvI"
+SPOON_KEY = " e2aeb117ea1642758219bdd5da0a230c "
 
 client = discord.Client(intents=discord.Intents.default())
 
@@ -58,4 +58,5 @@ async def on_message(message):
             await message.channel.send(f"⚠️ Tapahtui virhe: {e}")
 
 client.run(DISCORD_TOKEN)
+
 
