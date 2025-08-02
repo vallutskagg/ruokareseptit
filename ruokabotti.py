@@ -26,7 +26,7 @@ async def on_message(message):
             # Poimitaan ainekset viestistä
             parts = message.content.split("!resepti ", 1)
             if len(parts) < 2 or parts[1].strip() == "":
-                await message.channel.send("❗ Kirjoita komento näin: `!resepti esim pancake`")
+                await message.channel.send("❗ Kirjoita komento näin: `!resepti pancake`")
                 return
             
             hakusana = parts[1].strip()
@@ -42,20 +42,20 @@ async def on_message(message):
             response = requests.get(url, params=params)
             data = response.json()
 
-            if not data:
+            if not data.get("results"):
                 await message.channel.send("😔 En löytänyt reseptejä tuolla haulla, yritä uudestaan!")
                 return
 
             # Rakennetaan vastaus
             vastaus = "🍽 **Reseptiehdotuksia:**\n"
-            for resepti in data:
+            for resepti in data["results"]:
                 nimi = resepti["title"]
                 kuva = resepti["image"]
 
                 # luodaan oikea linkki (slug + id)
                 slug = nimi.lower().replace(" ", "-")
                 linkki = f"https://spoonacular.com/recipes/{slug}-{resepti['id']}"
-                
+
                 vastaus += f"👉 **{nimi}** \n🔗 {linkki} \n🖼 {kuva}\n\n"
 
             await message.channel.send(vastaus)
