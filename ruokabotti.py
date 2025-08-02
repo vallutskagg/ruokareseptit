@@ -51,7 +51,8 @@ async def on_message(message):
             for resepti in data:
                 nimi = resepti["title"]
                 kuva = resepti["image"]
-                linkki = f"https://spoonacular.com/recipes/{resepti['id']}"
+                slug = nimi.lower().replace(" ", "-") 
+                linkki = f"https://spoonacular.com/recipes/{slug}-{resepti['id']}"
                 vastaus += f"👉 **{nimi}** \n🔗 {linkki} \n🖼 {kuva}\n\n"
 
             await message.channel.send(vastaus)
@@ -60,6 +61,7 @@ async def on_message(message):
             await message.channel.send(f"⚠️ Tapahtui virhe: {e}")
 
 client.run(DISCORD_TOKEN)
+
 
 
 
