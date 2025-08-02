@@ -1,14 +1,15 @@
 import discord
 import requests
-import os
+import re  # HTML-tägien poistoon
 
 # 🔑 Aseta omat tunnukset tähän
 DISCORD_TOKEN = "MTQwMTAwNDI5MzQ4MTQzNTIzNw.GWJ-vl.FsOIUf1OTaPe6dbF0oIrngWu-3ED72Ijt-LVvI"
 SPOON_KEY = "e2aeb117ea1642758219bdd5da0a230c"
 
 intents = discord.Intents.default()
-intents.message_content = True  # 🔑 sallii viestien lukemisen
+intents.message_content = True  # sallii viestien lukemisen
 client = discord.Client(intents=intents)
+
 
 @client.event
 async def on_ready():
@@ -22,7 +23,6 @@ async def on_message(message):
     # Käyttö: !resepti pancake
     if message.content.startswith("!resepti"):
         try:
-            # 🔍 Poimitaan hakusana viestistä
             parts = message.content.split("!resepti ", 1)
             if len(parts) < 2 or parts[1].strip() == "":
                 await message.channel.send("❗ Kirjoita komento näin: `!resepti pancake`")
@@ -31,11 +31,11 @@ async def on_message(message):
             hakusana = parts[1].strip()
             await message.channel.send(f"🔍 Haetaan reseptejä haulla: **{hakusana}**...")
 
-            # 📡 1️⃣ Haetaan reseptilista Spoonacularista
-            url = f"https://api.spoonacular.com/recipes/complexSearch"
+            # Haku Spoonacularilta
+            url = "https://api.spoonacular.com/recipes/complexSearch"
             params = {
                 "query": hakusana,
-                "number": 2,  # ⬅ montako reseptiä näytetään
+                "number": 2,
                 "apiKey": SPOON_KEY
             }
             response = requests.get(url, params=params)
@@ -45,27 +45,37 @@ async def on_message(message):
                 await message.channel.send("😔 En löytänyt reseptejä tuolla haulla, yritä uudestaan!")
                 return
 
-            # 📄 Rakennetaan vastausviesti
             for resepti in data["results"]:
                 nimi = resepti["title"]
                 kuva = resepti["image"]
                 resepti_id = resepti["id"]
 
-                # ✅ Luodaan linkki reseptiin
+                # Haetaan ohjeet erikseen
+                info_url = f"https://api.spoonacular.com/recipes/{resepti_id}/information"
+                info_params = {"apiKey": SPOON_KEY}
+                info_response = requests.get(info_url, params=info_params)
+                info_data = info_response.json()
+
+                ohjeet_raw = info_data.get("instructions", "")
+                # Poistetaan HTML-tagit
+                ohjeet = re.sub("<.*?>", "", ohjeet_raw)
+
+                # Lyhennetään ohjeet, jos liian pitkät
+                if len(ohjeet) > 2000:
+                    ohjeet = ohjeet[:2000] + "... (lyhennetty)"
+
+                if not ohjeet.strip():
+                    ohjeet = "😔 Valmistusohjeita ei löytynyt."
+
                 slug = nimi.lower().replace(" ", "-")
                 linkki = f"https://spoonacular.com/recipes/{slug}-{resepti_id}"
 
-                # 📡 2️⃣ Haetaan reseptin tarkemmat tiedot (ohjeet)
-                info_url = f"https://api.spoonacular.com/recipes/{resepti_id}/information"
-                info_params = {"apiKey": SPOON_KEY}
-                info_data = requests.get(info_url, params=info_params).json()
-
-                ohjeet = info_data.get("instructions", None)
-                if not ohjeet:
-                    ohjeet = "😔 Valmistusohjeita ei löytynyt."
-
-                # 📝 Lähetetään resepti Discordiin
-                vastaus = f"🍽 **{nimi}**\n🔗 {linkki}\n🖼 {kuva}\n📜 **Ohjeet:** {ohjeet}"
+                vastaus = (
+                    f"🍽 **{nimi}**\n"
+                    f"🔗 {linkki}\n"
+                    f"🖼 {kuva}\n"
+                    f"📜 **Ohjeet:** {ohjeet}"
+                )
                 await message.channel.send(vastaus)
 
         except Exception as e:
