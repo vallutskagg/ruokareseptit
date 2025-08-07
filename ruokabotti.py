@@ -1,6 +1,7 @@
 import discord
 import requests
 import re  # HTML-tägien poistoon
+import os
 
 # 🔑 Aseta omat tunnukset tähän
 DISCORD_TOKEN = os.environ['DISCORD_TOKEN']
@@ -78,4 +79,5 @@ async def on_message(message):
             await message.channel.send(f"⚠️ Tapahtui virhe: {e}")
 
 client.run(DISCORD_TOKEN)
+
 
