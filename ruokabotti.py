@@ -3,8 +3,8 @@ import requests
 import re  # HTML-tägien poistoon
 
 # 🔑 Aseta omat tunnukset tähän
-DISCORD_TOKEN = "MTQwMTAwNDI5MzQ4MTQzNTIzNw.GWJ-vl.FsOIUf1OTaPe6dbF0oIrngWu-3ED72Ijt-LVvI"
-SPOON_KEY = "e2aeb117ea1642758219bdd5da0a230c"
+DISCORD_TOKEN = os.environ['DISCORD_TOKEN']
+SPOON_KEY = os.environ['SPOON_KEY']
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -78,3 +78,4 @@ async def on_message(message):
             await message.channel.send(f"⚠️ Tapahtui virhe: {e}")
 
 client.run(DISCORD_TOKEN)
+
